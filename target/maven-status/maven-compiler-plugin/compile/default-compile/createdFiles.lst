@@ -1,0 +1,6 @@
+com\hotel\config\DBConnect.class
+com\hotel\servlet\CancelReservationServlet.class
+com\hotel\servlet\ReservationsListServlet.class
+com\hotel\util\Html.class
+com\hotel\servlet\ReservationServlet.class
+com\hotel\servlet\RoomListServlet.class
