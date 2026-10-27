@@ -21,7 +21,7 @@ public class RoomListServlet extends HttpServlet {
         PrintWriter pw = response.getWriter();
 
         if (request.getParameter("checkIn") == null || request.getParameter("checkOut") == null) {
-            response.sendRedirect("index.html");
+            response.sendRedirect("index.jsp");
             return;
         }
 
@@ -29,7 +29,7 @@ public class RoomListServlet extends HttpServlet {
         LocalDate checkOut = LocalDate.parse(request.getParameter("checkOut"));
 
         if (checkIn.isBefore(LocalDate.now()) || !checkOut.isAfter(checkIn)) {
-            pw.println("Choose valid dates. <a href='index.html'>Home</a>");
+            pw.println("Choose valid dates. <a href='index.jsp'>Home</a>");
             return;
         }
 
@@ -73,7 +73,7 @@ public class RoomListServlet extends HttpServlet {
             pw.println("<p>Cannot load rooms. Check your MySQL password and run database/hotel_db.sql.</p>");
         }
 
-        pw.println("<a href='index.html'>Home</a>");
+        pw.println("<a href='index.jsp'>Home</a>");
         pw.println("</body></html>");
     }
 }

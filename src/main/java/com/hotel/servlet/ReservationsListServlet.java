@@ -57,7 +57,7 @@ public class ReservationsListServlet extends HttpServlet {
         }
 
         pw.println("</table><br>");
-        pw.println("<a href='index.html'>Home</a>");
+        pw.println("<a href='index.jsp'>Home</a>");
         pw.println("</body></html>");
     }
 }

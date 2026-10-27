@@ -27,7 +27,7 @@ public class ReservationServlet extends HttpServlet {
 
         if (guest.isEmpty() || phone.isEmpty() || checkIn.isBefore(LocalDate.now())
                 || !checkOut.isAfter(checkIn)) {
-            response.getWriter().println("Enter guest details and valid dates. <a href='index.html'>Home</a>");
+            response.getWriter().println("Enter guest details and valid dates. <a href='index.jsp'>Home</a>");
             return;
         }
 
@@ -42,7 +42,7 @@ public class ReservationServlet extends HttpServlet {
                 try (ResultSet rs = ps.executeQuery()) {
                     if (!rs.next()) {
                         con.rollback();
-                        response.getWriter().println("Room not found. <a href='index.html'>Home</a>");
+                        response.getWriter().println("Room not found. <a href='index.jsp'>Home</a>");
                         return;
                     }
                     price = rs.getBigDecimal("price_per_night");
@@ -58,7 +58,7 @@ public class ReservationServlet extends HttpServlet {
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         con.rollback();
-                        response.getWriter().println("Room already booked. <a href='index.html'>Search again</a>");
+                        response.getWriter().println("Room already booked. <a href='index.jsp'>Search again</a>");
                         return;
                     }
                 }
