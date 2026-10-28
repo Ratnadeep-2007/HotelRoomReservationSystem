@@ -1,0 +1,12 @@
+# NetBeans build directories
+build/
+dist/
+
+# NetBeans user-specific files
+nbproject/private/
+
+# System and editor files
+.DS_Store
+Thumbs.db
+*.class
+*.war

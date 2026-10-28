@@ -1,2 +1,0 @@
-ajp_lec.Student_reg_servlet
-ajp_lec.StudentServlet

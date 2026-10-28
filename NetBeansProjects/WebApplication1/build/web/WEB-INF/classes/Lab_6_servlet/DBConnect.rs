@@ -1,1 +1,0 @@
-ajp_lec.DBConnect

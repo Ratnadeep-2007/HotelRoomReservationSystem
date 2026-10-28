@@ -1,55 +1,104 @@
 # Hotel Room Reservation System
 
-This project has two applications on the same MySQL database (`hotel_db`):
+A web-based Hotel Room Reservation System developed using **Java Servlets**, **JSP**, **JDBC**, and **MySQL**, configured as an **Apache Ant Web Application** compatible with **Apache NetBeans** and **Apache Tomcat 10+ (Jakarta EE)**.
 
-1. **Web application** - Servlets + JSP + JDBC (for Tomcat).
-2. **Desktop application** - Swing GUI + JDBC (`desktop/` folder).
+---
 
-## Web flow
+## Features
+- **Browse Rooms:** View all available rooms, room types, capacities, and pricing.
+- **Room Management (CRUD):** Add, update, and manage room inventory with validation.
+- **Guest Booking:** Interactive booking flow with date selection, guest details, and automated price calculation.
+- **Reservation Records:** View all reservations with guest contact details and room assignments.
+- **Reservation Cancellation:** Cancel bookings with real-time status updates in MySQL.
 
-1. Open the home page (`index.jsp`) and enter check-in and check-out dates.
-2. View available rooms and book with guest name and phone.
-3. View reservations and cancel a booking.
-4. Use **Manage Rooms (CRUD)** to add, edit and delete rooms.
-5. Use **Save Guest** on the home page to store a Guest object in the session.
+---
 
-Total amount = price per night multiplied by number of nights.
-Cancelled bookings stay in the list, but no longer block the room.
+## Tech Stack
+- **Backend:** Java 17+, Jakarta Servlet 6.0 (`jakarta.servlet.*`), JDBC
+- **Database:** MySQL (`hotel_db`) via `mysql-connector-j`
+- **Frontend / Templating:** JSP, HTML5, CSS3
+- **Server:** Apache Tomcat 10+ (Jakarta EE 10)
+- **Build System:** Apache Ant (Native NetBeans Web Application)
 
-## Topics used
+---
 
-- **OOPs Concept**: `Person` -> `Guest` inheritance, `Room` model class (encapsulation).
-- **CRUD Operations**: `RoomDao` (add, read, update, delete) used by web and desktop apps.
-- **ResultSet + Java List**: query rows are read from a `ResultSet` into `List<Room>`.
-- **Lambda Expressions**: sorting the room list and button listeners in the desktop app.
-- **JDBC with Servlets**: servlets call `RoomDao`, which runs JDBC queries.
-- **JSP**: `index.jsp`, `rooms.jsp`, `room-form.jsp`, `guest.jsp`.
-- **Passing Data between JSP Pages**: servlet sets a request attribute and forwards to a JSP; the guest is passed through the session.
-- **Session Management with objects**: the `Guest` object is stored with `session.setAttribute("guest", guest)`.
-- **Setting Attributes**: request scope (`rooms`, `room`), session scope (`message`, `guest`) and application scope (`roomPageVisits`).
+## Project Structure
+```text
+HotelRoomReservationSystem/
+├── database/
+│   └── hotel_db.sql               # MySQL database schema & sample data
+├── nbproject/                     # NetBeans Ant project configuration
+│   ├── ant-deploy.xml
+│   ├── build-impl.xml
+│   ├── genfiles.properties
+│   ├── project.properties
+│   └── project.xml
+├── src/
+│   └── java/
+│       └── com/hotel/
+│           ├── config/
+│           │   └── DBConnect.java
+│           ├── dao/
+│           │   └── RoomDao.java
+│           ├── model/
+│           │   ├── Guest.java
+│           │   ├── Person.java
+│           │   └── Room.java
+│           ├── servlet/
+│           │   ├── CancelReservationServlet.java
+│           │   ├── GuestServlet.java
+│           │   ├── ReservationServlet.java
+│           │   ├── ReservationsListServlet.java
+│           │   ├── RoomCrudServlet.java
+│           │   └── RoomListServlet.java
+│           └── util/
+│               └── Html.java
+├── web/
+│   ├── META-INF/
+│   │   └── context.xml
+│   ├── WEB-INF/
+│   │   ├── lib/
+│   │   │   └── mysql-connector-j-8.3.0.jar
+│   │   └── web.xml
+│   ├── guest.jsp
+│   ├── index.html
+│   ├── index.jsp
+│   ├── room-form.jsp
+│   └── rooms.jsp
+├── build.xml                      # Ant build file
+├── .gitignore
+└── README.md
+```
 
-## Setup
+---
 
-1. Run `database/hotel_db.sql` in MySQL Workbench.
-2. Set your MySQL password in `src/main/java/com/hotel/config/DBConnect.java`
-   and in `desktop/src/com/hotel/desktop/DBConnect.java`.
-3. Double-click `start.bat` and choose:
-   - `1` to build the web WAR (`target/HotelRoomReservationSystem.war`), or
-   - `2` to run the desktop application.
-4. For the web app, deploy the WAR in Tomcat 10.1 (or Run from NetBeans),
-   then open `http://localhost:8080/HotelRoomReservationSystem/`.
+## Setup & Running in NetBeans
 
-## Main files
+### 1. Database Setup
+1. Start your **MySQL Server** (via MySQL Service or XAMPP).
+2. Open MySQL Workbench, phpMyAdmin, or the MySQL command line.
+3. Execute the script in [`database/hotel_db.sql`](database/hotel_db.sql) to create `hotel_db` and pre-populate sample rooms:
+   ```sql
+   source database/hotel_db.sql;
+   ```
+4. Verify your credentials in `src/java/com/hotel/config/DBConnect.java` (default user: `root`, password: `""`).
 
-- `index.jsp`: home page, date search and guest session form.
-- `RoomListServlet.java`: available rooms for the selected dates.
-- `ReservationServlet.java`: checks availability and saves a booking.
-- `ReservationsListServlet.java`: displays reservations.
-- `CancelReservationServlet.java`: cancels a booking.
-- `RoomCrudServlet.java` + `RoomDao.java`: room CRUD for `rooms.jsp`.
-- `GuestServlet.java` + `guest.jsp`: Guest object in the session.
-- `desktop/src/com/hotel/desktop/HotelDesktopApp.java`: Swing GUI (table + Add/Update/Delete).
-- `start.bat`: build the web app or run the desktop app.
-- `database/hotel_db.sql`: tables and five sample rooms.
+### 2. Open & Run in NetBeans
+1. Open **Apache NetBeans**.
+2. Go to **File** $\rightarrow$ **Open Project...** (`Ctrl + Shift + O`).
+3. Select this folder (`HotelRoomReservationSystem`).
+4. Right-click the project $\rightarrow$ **Run** (or press **F6**).
+5. NetBeans will build using Ant, deploy to Tomcat 10, and open:
+   ```
+   http://localhost:8080/HotelReservation/
+   ```
 
-The booking transaction locks the room while checking and saving, so two bookings cannot take the same dates.
+---
+
+## Accessing from Another Device on Local Network
+1. Ensure both devices are connected to the same Wi-Fi / LAN network.
+2. Find the host machine's IP address (e.g. `ipconfig`).
+3. Open in any browser:
+   ```
+   http://<HOST_IP>:8080/HotelReservation/
+   ```
