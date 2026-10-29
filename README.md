@@ -47,13 +47,10 @@ HotelRoomReservationSystem/
 │   │   ├── lib/
 │   │   │   └── mysql-connector-j-8.3.0.jar
 │   │   └── web.xml
-│   ├── available-rooms.jsp
-│   ├── guest.jsp
-│   ├── index.html
-│   ├── index.jsp
-│   ├── reservations.jsp
-│   ├── room-form.jsp
-│   └── rooms.jsp
+│   ├── index.html                     # Local browser redirect to index.jsp
+│   ├── index.jsp                      # Customer Portal: Search, available rooms, booking & session guest
+│   ├── rooms.jsp                      # Admin CRUD: Room table & Add/Edit room form
+│   └── reservations.jsp               # Bookings List: View all reservations & cancel booking
 ├── build.xml                      # Ant build file
 ├── .gitignore
 └── README.md

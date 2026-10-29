@@ -38,7 +38,7 @@ public class HotelServlet extends HttpServlet {
 
         try {
             if ("/rooms".equals(path)) {
-                // 1. Search Available Rooms by Date
+                // 1. Search Available Rooms by Date -> Forwards to index.jsp
                 String inParam = request.getParameter("checkIn");
                 String outParam = request.getParameter("checkOut");
 
@@ -58,42 +58,40 @@ public class HotelServlet extends HttpServlet {
                 }
 
                 List<Room> available = dao.getAvailableRooms(checkIn, checkOut);
-                request.setAttribute("rooms", available);
+                request.setAttribute("availableRooms", available);
                 request.setAttribute("checkIn", checkIn);
                 request.setAttribute("checkOut", checkOut);
-                request.getRequestDispatcher("available-rooms.jsp").forward(request, response);
+                request.getRequestDispatcher("index.jsp").forward(request, response);
 
             } else if ("/reservations".equals(path)) {
-                // 2. View All Reservations
+                // 2. View All Reservations -> Forwards to reservations.jsp
                 List<HotelDao.ReservationRecord> list = dao.getAllReservations();
                 request.setAttribute("reservations", list);
                 request.getRequestDispatcher("reservations.jsp").forward(request, response);
 
             } else {
-                // 3. Admin Room Management (/room-crud)
+                // 3. Admin Room Management -> Forwards to rooms.jsp
                 String action = request.getParameter("action");
                 if ("edit".equals(action)) {
                     int id = Integer.parseInt(request.getParameter("id"));
                     Room room = dao.getRoom(id);
                     request.setAttribute("room", room);
-                    request.getRequestDispatcher("room-form.jsp").forward(request, response);
-
                 } else if ("delete".equals(action)) {
                     int id = Integer.parseInt(request.getParameter("id"));
                     dao.deleteRoom(id);
                     request.getSession().setAttribute("message", "Room #" + id + " was deleted.");
                     response.sendRedirect("room-crud");
-
-                } else {
-                    List<Room> allRooms = dao.getAllRooms();
-                    request.setAttribute("rooms", allRooms);
-
-                    // Application Scope Counter (Lab 6)
-                    Integer visits = (Integer) getServletContext().getAttribute("roomVisits");
-                    getServletContext().setAttribute("roomVisits", (visits == null ? 1 : visits + 1));
-
-                    request.getRequestDispatcher("rooms.jsp").forward(request, response);
+                    return;
                 }
+
+                List<Room> allRooms = dao.getAllRooms();
+                request.setAttribute("rooms", allRooms);
+
+                // Application Scope Counter (Lab 6)
+                Integer visits = (Integer) getServletContext().getAttribute("roomVisits");
+                getServletContext().setAttribute("roomVisits", (visits == null ? 1 : visits + 1));
+
+                request.getRequestDispatcher("rooms.jsp").forward(request, response);
             }
         } catch (DateTimeParseException | HotelDao.InvalidBookingException e) {
             request.getSession().setAttribute("error", e.getMessage());
@@ -121,7 +119,8 @@ public class HotelServlet extends HttpServlet {
                 guest.setRoomType(request.getParameter("roomType"));
 
                 session.setAttribute("guest", guest);
-                response.sendRedirect("guest.jsp");
+                session.setAttribute("message", "Guest profile saved to session!");
+                response.sendRedirect("index.jsp");
 
             } else if ("/cancel".equals(path)) {
                 // 2. Cancel existing reservation
@@ -154,7 +153,7 @@ public class HotelServlet extends HttpServlet {
                 LocalDate checkOut = LocalDate.parse(outParam.trim());
 
                 dao.bookRoom(guestName.trim(), phone.trim(), roomId, checkIn, checkOut);
-                session.setAttribute("message", "Room reserved successfully!");
+                session.setAttribute("message", "Room booked successfully!");
                 response.sendRedirect("reservations");
 
             } else {
@@ -201,10 +200,10 @@ public class HotelServlet extends HttpServlet {
             }
         } catch (HotelDao.InvalidBookingException | HotelDao.RoomUnavailableException | DateTimeParseException | NumberFormatException e) {
             session.setAttribute("error", e.getMessage());
-            response.sendRedirect(path.equals("/room-crud") ? "room-form.jsp" : "index.jsp");
+            response.sendRedirect(path.equals("/room-crud") ? "room-crud" : "index.jsp");
         } catch (SQLException e) {
             session.setAttribute("error", (e.getErrorCode() == 1062 ? "Room number already exists." : "Database error: " + e.getMessage()));
-            response.sendRedirect(path.equals("/room-crud") ? "room-form.jsp" : "index.jsp");
+            response.sendRedirect(path.equals("/room-crud") ? "room-crud" : "index.jsp");
         }
     }
 }
