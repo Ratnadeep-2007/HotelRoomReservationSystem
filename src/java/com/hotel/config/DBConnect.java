@@ -9,7 +9,7 @@ public class DBConnect {
     public static Connection dbCon() throws SQLException {
         String url = "jdbc:mysql://localhost:3306/hotel_db";
         String user = "root";
-        String password = "";   // ← put your MySQL root password here if you set one
+        String password = "2006";
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");

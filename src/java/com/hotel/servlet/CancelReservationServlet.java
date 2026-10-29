@@ -1,6 +1,7 @@
 package com.hotel.servlet;
 
 import com.hotel.config.DBConnect;
+import com.hotel.exception.InvalidBookingException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -14,17 +15,40 @@ public class CancelReservationServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        int id = Integer.parseInt(request.getParameter("id"));
-        String sql = "UPDATE reservations SET booking_status='Cancelled' WHERE reservation_id=?";
+        HttpSession session = request.getSession();
+        try {
+            String idParam = request.getParameter("id");
+            if (idParam == null || idParam.trim().isEmpty()) {
+                throw new InvalidBookingException("Reservation ID is required for cancellation.");
+            }
 
-        try (Connection con = DBConnect.dbCon();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+            int id;
+            try {
+                id = Integer.parseInt(idParam.trim());
+            } catch (NumberFormatException e) {
+                throw new InvalidBookingException("Invalid reservation ID format.");
+            }
 
-            ps.setInt(1, id);
-            ps.executeUpdate();
-            response.sendRedirect("reservations");
+            String sql = "UPDATE reservations SET booking_status='Cancelled' WHERE reservation_id=? AND booking_status='Booked'";
+            try (Connection con = DBConnect.dbCon();
+                 PreparedStatement ps = con.prepareStatement(sql)) {
+
+                ps.setInt(1, id);
+                int rows = ps.executeUpdate();
+                if (rows > 0) {
+                    session.setAttribute("message", "Reservation #" + id + " has been successfully cancelled.");
+                } else {
+                    session.setAttribute("error", "Reservation #" + id + " was not found or was already cancelled.");
+                }
+            }
+        } catch (InvalidBookingException e) {
+            session.setAttribute("error", e.getMessage());
         } catch (SQLException e) {
-            throw new ServletException(e);
+            session.setAttribute("error", "Database error during cancellation: " + e.getMessage());
+        } catch (Exception e) {
+            session.setAttribute("error", "Unexpected error: " + e.getMessage());
         }
+
+        response.sendRedirect("reservations");
     }
 }

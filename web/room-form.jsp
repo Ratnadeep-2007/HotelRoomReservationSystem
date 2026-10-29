@@ -16,6 +16,14 @@
 
     <h2><%= edit ? "Edit Room" : "Add Room" %></h2>
 
+    <%
+        String err = (String) session.getAttribute("error");
+        if (err != null) {
+            out.println("<p style='color:#dc2626; background:#fee2e2; padding:10px; border-radius:6px; font-weight:500;'>&#9888; " + err + "</p>");
+            session.removeAttribute("error");
+        }
+    %>
+
     <form action="room-crud" method="post">
         <% if (edit) { %>
             <input type="hidden" name="roomId" value="<%= room.getRoomId() %>">
