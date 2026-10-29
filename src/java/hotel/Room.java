@@ -1,10 +1,8 @@
-package com.hotel.model;
+package hotel;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 
-// Simple model class for one row of the rooms table.
-public class Room implements Serializable {
+public class Room {
 
     private int roomId;
     private String roomNumber;
@@ -16,8 +14,7 @@ public class Room implements Serializable {
     public Room() {
     }
 
-    public Room(int roomId, String roomNumber, String roomType,
-                BigDecimal pricePerNight, int capacity, boolean active) {
+    public Room(int roomId, String roomNumber, String roomType, BigDecimal pricePerNight, int capacity, boolean active) {
         this.roomId = roomId;
         this.roomNumber = roomNumber;
         this.roomType = roomType;
@@ -72,10 +69,5 @@ public class Room implements Serializable {
 
     public void setActive(boolean active) {
         this.active = active;
-    }
-
-    @Override
-    public String toString() {
-        return "Room " + roomNumber + " (" + roomType + ")";
     }
 }

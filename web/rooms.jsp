@@ -1,14 +1,15 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.List"%>
-<%@page import="com.hotel.model.Room"%>
+<%@page import="hotel.Room"%>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Rooms</title>
+    <title>Room Management (CRUD)</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 30px; }
-        table { border-collapse: collapse; width: 100%; max-width: 900px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 30px; margin: 0; }
+        .container { max-width: 900px; margin: 0 auto; }
+        table { border-collapse: collapse; width: 100%; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-top: 15px; }
         th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; }
         th { background: #f1f5f9; color: #334155; font-weight: 600; }
         tr:hover { background: #f8fafc; }
@@ -21,6 +22,7 @@
     </style>
 </head>
 <body>
+<div class="container">
     <h2>Room Management (CRUD)</h2>
 
     <%-- Session Flash Messages --%>
@@ -76,10 +78,10 @@
     <p style="margin-top: 20px;">
         <a href="room-form.jsp" class="btn">+ Add New Room</a>
         &nbsp;&nbsp;
-        <a href="index.jsp">Back to Home</a>
+        <a href="index.jsp">&larr; Back to Home</a>
     </p>
 
-    <%-- Application Scope Counter --%>
-    <p style="color: #64748b; font-size: 13px;">Page Visits: <%= application.getAttribute("roomPageVisits") %></p>
+    <p style="color: #64748b; font-size: 13px;">Total Page Visits (Application Scope): <%= application.getAttribute("roomVisits") %></p>
+</div>
 </body>
 </html>

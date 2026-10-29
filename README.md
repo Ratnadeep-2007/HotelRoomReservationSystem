@@ -35,24 +35,15 @@ HotelRoomReservationSystem/
 │   └── project.xml
 ├── src/
 │   └── java/
-│       └── com/hotel/
-│           ├── config/
-│           │   └── DBConnect.java
-│           ├── dao/
-│           │   └── RoomDao.java
-│           ├── model/
-│           │   ├── Guest.java
-│           │   ├── Person.java
-│           │   └── Room.java
-│           ├── servlet/
-│           │   ├── CancelReservationServlet.java
-│           │   ├── GuestServlet.java
-│           │   ├── ReservationServlet.java
-│           │   ├── ReservationsListServlet.java
-│           │   ├── RoomCrudServlet.java
-│           │   └── RoomListServlet.java
-│           └── util/
-│               └── Html.java
+│       └── hotel/                 # Single clean package for college lab
+│           ├── DBConnect.java     # Database Connection
+│           ├── HotelDao.java      # JDBC CRUD, Collections & Lambdas
+│           ├── HotelException.java# Custom Exceptions (Lab 1)
+│           ├── Person.java        # Base Class for Inheritance (Lab 4)
+│           ├── Guest.java         # Subclass & Session Bean (Lab 8)
+│           ├── Room.java          # Room Entity Model
+│           ├── RoomServlet.java   # Controller for Rooms (/rooms, /room-crud)
+│           └── ReservationServlet.java # Controller for Bookings (/reserve, /reservations, /cancel, /guest)
 ├── web/
 │   ├── META-INF/
 │   │   └── context.xml
@@ -60,9 +51,11 @@ HotelRoomReservationSystem/
 │   │   ├── lib/
 │   │   │   └── mysql-connector-j-8.3.0.jar
 │   │   └── web.xml
+│   ├── available-rooms.jsp
 │   ├── guest.jsp
 │   ├── index.html
 │   ├── index.jsp
+│   ├── reservations.jsp
 │   ├── room-form.jsp
 │   └── rooms.jsp
 ├── build.xml                      # Ant build file

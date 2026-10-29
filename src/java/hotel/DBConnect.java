@@ -1,4 +1,4 @@
-package com.hotel.config;
+package hotel;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,7 +14,7 @@ public class DBConnect {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-            throw new SQLException("MySQL driver not found.", e);
+            throw new SQLException("MySQL Driver not found.", e);
         }
 
         return DriverManager.getConnection(url, user, password);

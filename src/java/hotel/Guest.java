@@ -1,9 +1,9 @@
-package com.hotel.model;
+package hotel;
 
 import java.io.Serializable;
 
-// OOP concept: Guest inherits name and phone from Person.
-// This object is stored in the session (Session Management with objects).
+// OOP Concept: Guest inherits from Person (Lab 4)
+// Stored as a session attribute object (Lab 8)
 public class Guest extends Person implements Serializable {
 
     private String roomType;

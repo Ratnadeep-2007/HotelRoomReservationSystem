@@ -1,6 +1,6 @@
-package com.hotel.model;
+package hotel;
 
-// OOP concept: this is a parent class. Guest will extend it.
+// OOP Concept: Base parent class for inheritance (Lab 4)
 public class Person {
 
     private String name;

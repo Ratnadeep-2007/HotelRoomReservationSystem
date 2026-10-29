@@ -1,30 +1,33 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="com.hotel.model.Guest"%>
+<%@page import="hotel.Guest"%>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Session Guest</title>
+    <title>Session Guest Profile</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 30px; margin: 0; }
+        .card { max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    </style>
 </head>
 <body>
-    <h2>Guest Stored in Session</h2>
+<div class="card">
+    <h2>Guest Stored in Session (Lab 8)</h2>
 
-    <%-- This page receives data from another page through the session.
-         The Guest object was set by GuestServlet (session.setAttribute). --%>
     <%
         Guest guest = (Guest) session.getAttribute("guest");
         if (guest == null) {
-            out.println("<p>No guest in session. First save a guest from the home page.</p>");
+            out.println("<p style='color:#64748b;'>No guest currently stored in session scope. First save a guest from the home page.</p>");
         } else {
     %>
-        <p>Name: <%= guest.getName() %></p>
-        <p>Phone: <%= guest.getPhone() %></p>
-        <p>Room Type: <%= guest.getRoomType() %></p>
+        <p><strong>Name:</strong> <%= guest.getName() %></p>
+        <p><strong>Phone:</strong> <%= guest.getPhone() %></p>
+        <p><strong>Preferred Room:</strong> <%= guest.getRoomType() %></p>
     <%
         }
     %>
 
-    <br>
-    <a href="index.jsp">Home</a>
+    <p style="margin-top:20px;"><a href="index.jsp">&larr; Back to Home</a></p>
+</div>
 </body>
 </html>
