@@ -11,67 +11,242 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 // Advanced Java - MDI (Multiple Document Interface) Desktop Application
+// 1-to-1 equivalent to the 3 JSP pages (index.jsp, rooms.jsp, reservations.jsp)
 public class HotelMDI extends JFrame {
 
     private final JDesktopPane desktopPane;
     private final HotelDao dao = new HotelDao();
 
+    // In-memory Session Guest object (Equivalent to HttpSession in index.jsp - Lab 8)
+    private Person.Guest sessionGuest = null;
+
     public HotelMDI() {
         setTitle("Hotel Room Reservation System - MDI Portal");
-        setSize(1000, 700);
+        setSize(1050, 750);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // MDI Desktop Container
         desktopPane = new JDesktopPane();
-        desktopPane.setBackground(new Color(44, 62, 80));
+        desktopPane.setBackground(new Color(244, 247, 246));
         add(desktopPane, BorderLayout.CENTER);
 
         // Build Menu Bar
         setJMenuBar(createMenuBar());
 
-        // Automatically open the Room CRUD window on startup
-        openRoomCrudFrame();
+        // Startup window: exactly matches index.jsp
+        openHomePortalFrame();
     }
 
     private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
-        // Menu 1: Rooms
-        JMenu roomMenu = new JMenu("Rooms");
-        JMenuItem manageRoomsItem = new JMenuItem("Manage Rooms (CRUD)");
+        JMenu navMenu = new JMenu("Navigation");
+        JMenuItem homeItem = new JMenuItem("Home / Customer Portal (index.jsp)");
+        homeItem.addActionListener(e -> openHomePortalFrame());
+        JMenuItem manageRoomsItem = new JMenuItem("Manage Rooms CRUD (rooms.jsp)");
         manageRoomsItem.addActionListener(e -> openRoomCrudFrame());
-        roomMenu.add(manageRoomsItem);
-
-        // Menu 2: Bookings
-        JMenu bookingMenu = new JMenu("Bookings");
-        JMenuItem searchBookItem = new JMenuItem("Search & Book Rooms");
-        searchBookItem.addActionListener(e -> openBookingFrame());
-        JMenuItem viewReservationsItem = new JMenuItem("View All Reservations");
+        JMenuItem viewReservationsItem = new JMenuItem("View Reservations (reservations.jsp)");
         viewReservationsItem.addActionListener(e -> openReservationsFrame());
-        bookingMenu.add(searchBookItem);
-        bookingMenu.add(viewReservationsItem);
 
-        // Menu 3: Exit
-        JMenu exitMenu = new JMenu("System");
+        navMenu.add(homeItem);
+        navMenu.add(manageRoomsItem);
+        navMenu.add(viewReservationsItem);
+
+        JMenu systemMenu = new JMenu("System");
         JMenuItem exitItem = new JMenuItem("Exit");
         exitItem.addActionListener(e -> System.exit(0));
-        exitMenu.add(exitItem);
+        systemMenu.add(exitItem);
 
-        menuBar.add(roomMenu);
-        menuBar.add(bookingMenu);
-        menuBar.add(exitMenu);
+        menuBar.add(navMenu);
+        menuBar.add(systemMenu);
         return menuBar;
     }
 
-    // --- 1. CHILD WINDOW: ROOM CRUD ---
-    private void openRoomCrudFrame() {
-        JInternalFrame frame = new JInternalFrame("Room Management (CRUD)", true, true, true, true);
-        frame.setSize(750, 480);
-        frame.setLocation(30, 30);
+    // =========================================================================
+    // 1. HOME / CUSTOMER PORTAL (Exact Desktop Equivalent of index.jsp)
+    // =========================================================================
+    public void openHomePortalFrame() {
+        JInternalFrame frame = new JInternalFrame("Home Portal (index.jsp equivalent)", true, true, true, true);
+        frame.setSize(850, 620);
+        frame.setLocation(40, 20);
         frame.setLayout(new BorderLayout(10, 10));
 
-        // Table
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Navigation Shortcut Buttons
+        JPanel navShortcut = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton btnGoRooms = new JButton("-> Manage Rooms (CRUD)");
+        JButton btnGoRes = new JButton("-> View All Reservations");
+        btnGoRooms.addActionListener(e -> openRoomCrudFrame());
+        btnGoRes.addActionListener(e -> openReservationsFrame());
+        navShortcut.add(new JLabel("Quick Links: "));
+        navShortcut.add(btnGoRooms);
+        navShortcut.add(btnGoRes);
+        mainPanel.add(navShortcut);
+
+        // --- SECTION 1: GUEST SESSION PROFILE (Lab 8) ---
+        JPanel guestPanel = new JPanel(new GridLayout(2, 4, 8, 8));
+        guestPanel.setBorder(BorderFactory.createTitledBorder("1. Guest Session Profile (HttpSession - Lab 8)"));
+
+        JTextField txtGuestName = new JTextField(sessionGuest != null ? sessionGuest.getName() : "");
+        JTextField txtGuestPhone = new JTextField(sessionGuest != null ? sessionGuest.getPhone() : "");
+        JComboBox<String> cmbRoomType = new JComboBox<>(new String[]{"Single", "Double", "Deluxe", "Suite"});
+        if (sessionGuest != null && sessionGuest.getRoomType() != null) {
+            cmbRoomType.setSelectedItem(sessionGuest.getRoomType());
+        }
+        JButton btnSaveGuest = new JButton("Save to Session");
+
+        JLabel lblSessionStatus = new JLabel(sessionGuest != null
+                ? "Active: " + sessionGuest.getName() + " (" + sessionGuest.getRoomType() + ")"
+                : "No active guest in session.");
+        lblSessionStatus.setForeground(sessionGuest != null ? new Color(17, 120, 100) : Color.GRAY);
+
+        guestPanel.add(new JLabel("Full Name:"));
+        guestPanel.add(new JLabel("Phone:"));
+        guestPanel.add(new JLabel("Preference:"));
+        guestPanel.add(new JLabel("Status:"));
+
+        guestPanel.add(txtGuestName);
+        guestPanel.add(txtGuestPhone);
+        guestPanel.add(cmbRoomType);
+        guestPanel.add(btnSaveGuest);
+
+        mainPanel.add(guestPanel);
+        mainPanel.add(lblSessionStatus);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        // --- SECTION 2: SEARCH AVAILABLE ROOMS ---
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        searchPanel.setBorder(BorderFactory.createTitledBorder("2. Search & Book Rooms"));
+        JTextField txtIn = new JTextField(LocalDate.now().toString(), 10);
+        JTextField txtOut = new JTextField(LocalDate.now().plusDays(1).toString(), 10);
+        JButton btnSearch = new JButton("Check Availability");
+
+        searchPanel.add(new JLabel("Check-in:"));
+        searchPanel.add(txtIn);
+        searchPanel.add(new JLabel("Check-out:"));
+        searchPanel.add(txtOut);
+        searchPanel.add(btnSearch);
+        mainPanel.add(searchPanel);
+
+        // --- SECTION 3: AVAILABLE ROOMS LIST ---
+        String[] columns = {"ID", "Room No", "Type", "Price / Night", "Capacity"};
+        DefaultTableModel searchModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int col) { return false; }
+        };
+        JTable searchTable = new JTable(searchModel);
+        JScrollPane scrollSearch = new JScrollPane(searchTable);
+        scrollSearch.setPreferredSize(new Dimension(800, 180));
+        scrollSearch.setBorder(BorderFactory.createTitledBorder("Available Rooms (Select one to book)"));
+        mainPanel.add(scrollSearch);
+
+        // --- SECTION 4: BOOKING CONFIRMATION FORM ---
+        JPanel bookForm = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        bookForm.setBorder(BorderFactory.createTitledBorder("Confirm Booking"));
+        JTextField txtBookName = new JTextField(txtGuestName.getText(), 14);
+        JTextField txtBookPhone = new JTextField(txtGuestPhone.getText(), 12);
+        JButton btnBook = new JButton("Book Selected Room");
+
+        bookForm.add(new JLabel("Guest Name:"));
+        bookForm.add(txtBookName);
+        bookForm.add(new JLabel("Phone:"));
+        bookForm.add(txtBookPhone);
+        bookForm.add(btnBook);
+        mainPanel.add(bookForm);
+
+        // Action: Save Guest in Session
+        btnSaveGuest.addActionListener(e -> {
+            String name = txtGuestName.getText().trim();
+            String phone = txtGuestPhone.getText().trim();
+            String type = (String) cmbRoomType.getSelectedItem();
+            if (name.isEmpty() || phone.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Please enter both name and phone number.", "Notice", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            sessionGuest = new Person.Guest(name, phone, type);
+            txtBookName.setText(name);
+            txtBookPhone.setText(phone);
+            lblSessionStatus.setText("Active: " + name + " (" + type + ")");
+            lblSessionStatus.setForeground(new Color(17, 120, 100));
+            JOptionPane.showMessageDialog(frame, "Guest profile saved to session scope!");
+        });
+
+        // Action: Search Available Rooms
+        btnSearch.addActionListener(e -> {
+            try {
+                LocalDate in = LocalDate.parse(txtIn.getText().trim());
+                LocalDate out = LocalDate.parse(txtOut.getText().trim());
+                if (in.isBefore(LocalDate.now())) {
+                    JOptionPane.showMessageDialog(frame, "Check-in date cannot be in the past.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                if (!out.isAfter(in)) {
+                    JOptionPane.showMessageDialog(frame, "Check-out date must be after check-in date.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                searchModel.setRowCount(0);
+                List<Room> available = dao.getAvailableRooms(in, out);
+                for (Room r : available) {
+                    searchModel.addRow(new Object[]{r.getRoomId(), r.getRoomNumber(), r.getRoomType(), "Rs. " + r.getPricePerNight(), r.getCapacity()});
+                }
+                if (available.isEmpty()) {
+                    JOptionPane.showMessageDialog(frame, "No rooms available for selected dates.");
+                }
+            } catch (DateTimeParseException ex) {
+                JOptionPane.showMessageDialog(frame, "Invalid date format. Please use YYYY-MM-DD.", "Date Error", JOptionPane.ERROR_MESSAGE);
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(frame, "Database Error: " + ex.getMessage(), "DB Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // Action: Book Selected Room
+        btnBook.addActionListener(e -> {
+            int row = searchTable.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(frame, "Please select an available room from the table above.");
+                return;
+            }
+            try {
+                int roomId = (int) searchModel.getValueAt(row, 0);
+                String name = txtBookName.getText().trim();
+                String phone = txtBookPhone.getText().trim();
+                LocalDate in = LocalDate.parse(txtIn.getText().trim());
+                LocalDate out = LocalDate.parse(txtOut.getText().trim());
+
+                if (name.isEmpty() || phone.length() < 7) {
+                    JOptionPane.showMessageDialog(frame, "Enter a valid guest name and contact phone number (at least 7 digits).");
+                    return;
+                }
+
+                dao.bookRoom(name, phone, roomId, in, out);
+                JOptionPane.showMessageDialog(frame, "Room booked successfully! Opening reservations...");
+                btnSearch.doClick(); // Refresh search table
+                openReservationsFrame(); // Open reservations list
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame, "Booking Failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        frame.add(new JScrollPane(mainPanel), BorderLayout.CENTER);
+        desktopPane.add(frame);
+        frame.setVisible(true);
+    }
+
+    // =========================================================================
+    // 2. ROOM CRUD WINDOW (Exact Desktop Equivalent of rooms.jsp)
+    // =========================================================================
+    public void openRoomCrudFrame() {
+        JInternalFrame frame = new JInternalFrame("Room Management - CRUD (rooms.jsp equivalent)", true, true, true, true);
+        frame.setSize(800, 500);
+        frame.setLocation(80, 50);
+        frame.setLayout(new BorderLayout(10, 10));
+
+        // 1. Table
         String[] columns = {"ID", "Room No", "Type", "Price / Night", "Capacity", "Active"};
         DefaultTableModel model = new DefaultTableModel(columns, 0) {
             @Override
@@ -80,9 +255,9 @@ public class HotelMDI extends JFrame {
         JTable table = new JTable(model);
         frame.add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // Form Panel
+        // 2. Add / Edit Form Panel (Directly below table, like rooms.jsp)
         JPanel formPanel = new JPanel(new GridLayout(2, 6, 8, 8));
-        formPanel.setBorder(BorderFactory.createTitledBorder("Room Details"));
+        formPanel.setBorder(BorderFactory.createTitledBorder("Add / Edit Room Form"));
 
         JTextField txtNo = new JTextField();
         JTextField txtType = new JTextField();
@@ -95,7 +270,7 @@ public class HotelMDI extends JFrame {
         formPanel.add(new JLabel("Price:"));
         formPanel.add(new JLabel("Capacity:"));
         formPanel.add(new JLabel("Status:"));
-        formPanel.add(new JLabel("")); // Spacer
+        formPanel.add(new JLabel(""));
 
         formPanel.add(txtNo);
         formPanel.add(txtType);
@@ -103,7 +278,7 @@ public class HotelMDI extends JFrame {
         formPanel.add(txtCap);
         formPanel.add(chkActive);
 
-        // Button Panel
+        // Buttons
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnAdd = new JButton("Add Room");
         JButton btnUpdate = new JButton("Update Selected");
@@ -120,7 +295,6 @@ public class HotelMDI extends JFrame {
         southPanel.add(btnPanel, BorderLayout.SOUTH);
         frame.add(southPanel, BorderLayout.SOUTH);
 
-        // Load Rooms Method
         Runnable loadRooms = () -> {
             try {
                 model.setRowCount(0);
@@ -136,7 +310,6 @@ public class HotelMDI extends JFrame {
             }
         };
 
-        // Table Selection Listener
         table.getSelectionModel().addListSelectionListener(e -> {
             int row = table.getSelectedRow();
             if (row != -1) {
@@ -148,7 +321,6 @@ public class HotelMDI extends JFrame {
             }
         });
 
-        // Add
         btnAdd.addActionListener(e -> {
             try {
                 Room r = new Room();
@@ -165,11 +337,10 @@ public class HotelMDI extends JFrame {
             }
         });
 
-        // Update
         btnUpdate.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row == -1) {
-                JOptionPane.showMessageDialog(frame, "Please select a room to update.");
+                JOptionPane.showMessageDialog(frame, "Select a room to update.");
                 return;
             }
             try {
@@ -184,11 +355,10 @@ public class HotelMDI extends JFrame {
             }
         });
 
-        // Delete
         btnDelete.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row == -1) {
-                JOptionPane.showMessageDialog(frame, "Please select a room to delete.");
+                JOptionPane.showMessageDialog(frame, "Select a room to delete.");
                 return;
             }
             int id = (int) model.getValueAt(row, 0);
@@ -209,105 +379,13 @@ public class HotelMDI extends JFrame {
         frame.setVisible(true);
     }
 
-    // --- 2. CHILD WINDOW: SEARCH & BOOK ---
-    private void openBookingFrame() {
-        JInternalFrame frame = new JInternalFrame("Search & Book Rooms", true, true, true, true);
-        frame.setSize(750, 450);
-        frame.setLocation(100, 60);
-        frame.setLayout(new BorderLayout(10, 10));
-
-        // Search Panel (North)
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        searchPanel.setBorder(BorderFactory.createTitledBorder("Check Dates"));
-        JTextField txtIn = new JTextField(LocalDate.now().toString(), 10);
-        JTextField txtOut = new JTextField(LocalDate.now().plusDays(1).toString(), 10);
-        JButton btnSearch = new JButton("Search Available Rooms");
-        searchPanel.add(new JLabel("Check-in (YYYY-MM-DD):"));
-        searchPanel.add(txtIn);
-        searchPanel.add(new JLabel("Check-out (YYYY-MM-DD):"));
-        searchPanel.add(txtOut);
-        searchPanel.add(btnSearch);
-        frame.add(searchPanel, BorderLayout.NORTH);
-
-        // Available Rooms Table (Center)
-        String[] columns = {"ID", "Room No", "Type", "Price / Night", "Capacity"};
-        DefaultTableModel model = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int col) { return false; }
-        };
-        JTable table = new JTable(model);
-        frame.add(new JScrollPane(table), BorderLayout.CENTER);
-
-        // Booking Panel (South)
-        JPanel bookPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bookPanel.setBorder(BorderFactory.createTitledBorder("Guest Booking"));
-        JTextField txtGuest = new JTextField(12);
-        JTextField txtPhone = new JTextField(10);
-        JButton btnBook = new JButton("Confirm Reservation");
-        bookPanel.add(new JLabel("Guest Name:"));
-        bookPanel.add(txtGuest);
-        bookPanel.add(new JLabel("Phone:"));
-        bookPanel.add(txtPhone);
-        bookPanel.add(btnBook);
-        frame.add(bookPanel, BorderLayout.SOUTH);
-
-        // Search Action
-        btnSearch.addActionListener(e -> {
-            try {
-                LocalDate in = LocalDate.parse(txtIn.getText().trim());
-                LocalDate out = LocalDate.parse(txtOut.getText().trim());
-                if (!out.isAfter(in)) {
-                    JOptionPane.showMessageDialog(frame, "Check-out must be after check-in.");
-                    return;
-                }
-                model.setRowCount(0);
-                List<Room> available = dao.getAvailableRooms(in, out);
-                for (Room r : available) {
-                    model.addRow(new Object[]{r.getRoomId(), r.getRoomNumber(), r.getRoomType(), r.getPricePerNight(), r.getCapacity()});
-                }
-            } catch (DateTimeParseException ex) {
-                JOptionPane.showMessageDialog(frame, "Invalid date format (use YYYY-MM-DD).", "Error", JOptionPane.ERROR_MESSAGE);
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(frame, "DB Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        // Book Action
-        btnBook.addActionListener(e -> {
-            int row = table.getSelectedRow();
-            if (row == -1) {
-                JOptionPane.showMessageDialog(frame, "Please select an available room from table.");
-                return;
-            }
-            try {
-                int roomId = (int) model.getValueAt(row, 0);
-                String guest = txtGuest.getText().trim();
-                String phone = txtPhone.getText().trim();
-                LocalDate in = LocalDate.parse(txtIn.getText().trim());
-                LocalDate out = LocalDate.parse(txtOut.getText().trim());
-
-                if (guest.isEmpty() || phone.length() < 7) {
-                    JOptionPane.showMessageDialog(frame, "Please enter valid guest name and contact number.");
-                    return;
-                }
-
-                dao.bookRoom(guest, phone, roomId, in, out);
-                JOptionPane.showMessageDialog(frame, "Room booked successfully!");
-                btnSearch.doClick(); // Refresh search
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(frame, "Booking Failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        desktopPane.add(frame);
-        frame.setVisible(true);
-    }
-
-    // --- 3. CHILD WINDOW: VIEW RESERVATIONS ---
-    private void openReservationsFrame() {
-        JInternalFrame frame = new JInternalFrame("All Reservations", true, true, true, true);
-        frame.setSize(800, 450);
-        frame.setLocation(160, 90);
+    // =========================================================================
+    // 3. RESERVATIONS WINDOW (Exact Desktop Equivalent of reservations.jsp)
+    // =========================================================================
+    public void openReservationsFrame() {
+        JInternalFrame frame = new JInternalFrame("Reservation Records (reservations.jsp equivalent)", true, true, true, true);
+        frame.setSize(850, 480);
+        frame.setLocation(120, 80);
         frame.setLayout(new BorderLayout(10, 10));
 
         String[] columns = {"ID", "Guest Name", "Phone", "Room No", "Check-in", "Check-out", "Total (Rs.)", "Status"};
@@ -318,7 +396,6 @@ public class HotelMDI extends JFrame {
         JTable table = new JTable(model);
         frame.add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // Bottom Controls
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnCancel = new JButton("Cancel Selected Booking");
         JButton btnRefresh = new JButton("Refresh");
@@ -373,7 +450,6 @@ public class HotelMDI extends JFrame {
     }
 
     public static void main(String[] args) {
-        // Set Look and Feel to System native
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ignored) {}
