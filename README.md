@@ -35,8 +35,9 @@ HotelRoomReservationSystem/
 │   └── project.xml
 ├── src/
 │   └── java/
-│       └── hotel/                 # Exactly 4 Clean Java Files for College Practical
+│       └── hotel/                 # Exactly 5 Clean Java Files (Web + Desktop MDI)
 │           ├── HotelDao.java      # DB Connection (JDBC), PreparedStatement CRUD, Lambda & Custom Exception
+│           ├── HotelMDI.java      # Swing Desktop MDI App (JDesktopPane + JInternalFrames for CRUD & Bookings)
 │           ├── HotelServlet.java  # Master Front Controller Servlet (/rooms, /room-crud, /reserve, /cancel, /guest)
 │           ├── Person.java        # OOP Inheritance (Person & Guest extends Person) + Session Bean
 │           └── Room.java          # Room Entity Model Bean
