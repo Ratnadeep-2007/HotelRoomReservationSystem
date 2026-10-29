@@ -7,32 +7,30 @@
     <meta charset="UTF-8">
     <title>Reservation Records</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 30px; margin: 0; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        table { border-collapse: collapse; width: 100%; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-top: 15px; }
-        th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-        th { background: #f1f5f9; color: #334155; font-weight: 600; }
-        .status-booked { color: #15803d; font-weight: 600; background: #dcfce7; padding: 3px 8px; border-radius: 4px; display: inline-block; }
-        .status-cancelled { color: #b91c1c; font-weight: 600; background: #fee2e2; padding: 3px 8px; border-radius: 4px; display: inline-block; }
-        .btn-cancel { background: #ef4444; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
-        .btn-cancel:hover { background: #dc2626; }
-        .alert-msg { background: #dcfce7; color: #166534; padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-weight: 500; }
-        .alert-err { background: #fee2e2; color: #991b1b; padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-weight: 500; }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .msg { color: green; font-weight: bold; margin: 10px 0; }
+        .err { color: red; font-weight: bold; margin: 10px 0; }
     </style>
 </head>
 <body>
-<div class="container">
-    <h2>Reservation Records</h2>
+    <h2>Hotel Reservation Records</h2>
 
+    <p><a href="index.jsp">&larr; Back to Home</a></p>
+    <hr>
+
+    <%-- Session Flash Messages --%>
     <%
         String msg = (String) session.getAttribute("message");
         if (msg != null) {
-            out.println("<div class='alert-msg'>&#10003; " + msg + "</div>");
+            out.println("<p class='msg'>" + msg + "</p>");
             session.removeAttribute("message");
         }
         String err = (String) session.getAttribute("error");
         if (err != null) {
-            out.println("<div class='alert-err'>&#9888; " + err + "</div>");
+            out.println("<p class='err'>Error: " + err + "</p>");
             session.removeAttribute("error");
         }
     %>
@@ -55,40 +53,35 @@
                 for (ReservationRecord r : list) {
         %>
         <tr>
-            <td>#<%= r.getReservationId() %></td>
-            <td><strong><%= r.getGuestName() %></strong></td>
+            <td><%= r.getReservationId() %></td>
+            <td><%= r.getGuestName() %></td>
             <td><%= r.getPhone() %></td>
             <td>Room <%= r.getRoomNumber() %></td>
             <td><%= r.getCheckIn() %></td>
             <td><%= r.getCheckOut() %></td>
-            <td><strong>Rs. <%= r.getTotalAmount() %></strong></td>
-            <% if ("Booked".equalsIgnoreCase(r.getBookingStatus())) { %>
-                <td><span class="status-booked">Booked</span></td>
-                <td>
+            <td>Rs. <%= r.getTotalAmount() %></td>
+            <td><b><%= r.getBookingStatus() %></b></td>
+            <td>
+                <% if ("Booked".equalsIgnoreCase(r.getBookingStatus())) { %>
                     <form action="cancel" method="post" onsubmit="return confirm('Cancel this reservation?');" style="margin:0;">
                         <input type="hidden" name="id" value="<%= r.getReservationId() %>">
-                        <input type="submit" class="btn-cancel" value="Cancel">
+                        <input type="submit" value="Cancel">
                     </form>
-                </td>
-            <% } else { %>
-                <td><span class="status-cancelled">Cancelled</span></td>
-                <td style="color:#94a3b8;">-</td>
-            <% } %>
+                <% } else { %>
+                    -
+                <% } %>
+            </td>
         </tr>
         <%
                 }
             } else {
         %>
         <tr>
-            <td colspan="9" style="text-align:center; padding:20px; color:#64748b;">No reservations found yet.</td>
+            <td colspan="9" align="center">No reservations found.</td>
         </tr>
         <%
             }
         %>
     </table>
-
-    <p style="margin-top:20px;"><a href="index.jsp">&larr; Back to Home</a></p>
-</div>
 </body>
 </html>
-
