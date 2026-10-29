@@ -35,15 +35,11 @@ HotelRoomReservationSystem/
 │   └── project.xml
 ├── src/
 │   └── java/
-│       └── hotel/                 # Single clean package for college lab
-│           ├── DBConnect.java     # Database Connection
-│           ├── HotelDao.java      # JDBC CRUD, Collections & Lambdas
-│           ├── HotelException.java# Custom Exceptions (Lab 1)
-│           ├── Person.java        # Base Class for Inheritance (Lab 4)
-│           ├── Guest.java         # Subclass & Session Bean (Lab 8)
-│           ├── Room.java          # Room Entity Model
-│           ├── RoomServlet.java   # Controller for Rooms (/rooms, /room-crud)
-│           └── ReservationServlet.java # Controller for Bookings (/reserve, /reservations, /cancel, /guest)
+│       └── hotel/                 # Exactly 4 Clean Java Files for College Practical
+│           ├── HotelDao.java      # DB Connection (JDBC), PreparedStatement CRUD, Lambda & Custom Exception
+│           ├── HotelServlet.java  # Master Front Controller Servlet (/rooms, /room-crud, /reserve, /cancel, /guest)
+│           ├── Person.java        # OOP Inheritance (Person & Guest extends Person) + Session Bean
+│           └── Room.java          # Room Entity Model Bean
 ├── web/
 │   ├── META-INF/
 │   │   └── context.xml

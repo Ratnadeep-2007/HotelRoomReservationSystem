@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="hotel.Guest"%>
+<%@page import="hotel.Person.Guest"%>
 <!DOCTYPE html>
 <html>
 <head>

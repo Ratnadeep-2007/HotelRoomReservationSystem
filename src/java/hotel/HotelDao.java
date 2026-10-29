@@ -6,10 +6,44 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-// Data Access Object handling all JDBC operations (Labs 2, 3, 4, 6)
+// Data Access Object handling database connection, custom exceptions, and JDBC queries (Labs 1, 2, 3, 4, 6)
 public class HotelDao {
 
-    // --- INNER CLASS FOR RESERVATION RECORDS ---
+    // === 1. DATABASE CONNECTION (JDBC) ===
+    public static Connection getConnection() throws SQLException {
+        String url = "jdbc:mysql://localhost:3306/hotel_db";
+        String user = "root";
+        String password = "2006";
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("MySQL JDBC Driver not found.", e);
+        }
+
+        return DriverManager.getConnection(url, user, password);
+    }
+
+    // === 2. CUSTOM EXCEPTION HIERARCHY (Lab 1) ===
+    public static class HotelException extends Exception {
+        public HotelException(String message) {
+            super(message);
+        }
+    }
+
+    public static class InvalidBookingException extends HotelException {
+        public InvalidBookingException(String message) {
+            super(message);
+        }
+    }
+
+    public static class RoomUnavailableException extends HotelException {
+        public RoomUnavailableException(String message) {
+            super(message);
+        }
+    }
+
+    // === 3. RESERVATION RECORD MODEL ===
     public static class ReservationRecord {
         private int reservationId;
         private String guestName;
@@ -45,12 +79,12 @@ public class HotelDao {
         public void setBookingStatus(String status) { this.bookingStatus = status; }
     }
 
-    // --- ROOM CRUD (Lab 4) ---
+    // === 4. ROOM CRUD OPERATIONS (Lab 4) ===
 
     // CREATE
     public void addRoom(Room room) throws SQLException {
         String sql = "INSERT INTO rooms (room_number, room_type, price_per_night, capacity, active) VALUES (?, ?, ?, ?, ?)";
-        try (Connection con = DBConnect.dbCon();
+        try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, room.getRoomNumber());
             ps.setString(2, room.getRoomType());
@@ -65,25 +99,25 @@ public class HotelDao {
     public List<Room> getAllRooms() throws SQLException {
         List<Room> rooms = new ArrayList<>(); // Collections (Lab 2)
         String sql = "SELECT * FROM rooms ORDER BY room_number";
-        try (Connection con = DBConnect.dbCon();
+        try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 rooms.add(mapRoom(rs));
             }
         }
-        // Lambda Expression: sort rooms by price ascending (Lab 3)
+        // Lambda Expression to sort rooms by price low to high (Lab 3)
         rooms.sort((r1, r2) -> r1.getPricePerNight().compareTo(r2.getPricePerNight()));
         return rooms;
     }
 
-    // READ AVAILABLE ROOMS FOR DATE RANGE
+    // READ AVAILABLE ROOMS FOR DATES
     public List<Room> getAvailableRooms(LocalDate checkIn, LocalDate checkOut) throws SQLException {
         List<Room> rooms = new ArrayList<>();
         String sql = "SELECT * FROM rooms WHERE active = TRUE AND room_id NOT IN "
                 + "(SELECT room_id FROM reservations WHERE booking_status = 'Booked' "
                 + "AND check_in < ? AND check_out > ?) ORDER BY room_number";
-        try (Connection con = DBConnect.dbCon();
+        try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setDate(1, Date.valueOf(checkOut));
             ps.setDate(2, Date.valueOf(checkIn));
@@ -99,7 +133,7 @@ public class HotelDao {
     // READ ONE ROOM
     public Room getRoom(int roomId) throws SQLException {
         String sql = "SELECT * FROM rooms WHERE room_id = ?";
-        try (Connection con = DBConnect.dbCon();
+        try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, roomId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -114,7 +148,7 @@ public class HotelDao {
     // UPDATE
     public void updateRoom(Room room) throws SQLException {
         String sql = "UPDATE rooms SET room_number = ?, room_type = ?, price_per_night = ?, capacity = ?, active = ? WHERE room_id = ?";
-        try (Connection con = DBConnect.dbCon();
+        try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, room.getRoomNumber());
             ps.setString(2, room.getRoomType());
@@ -129,20 +163,20 @@ public class HotelDao {
     // DELETE
     public void deleteRoom(int roomId) throws SQLException {
         String sql = "DELETE FROM rooms WHERE room_id = ?";
-        try (Connection con = DBConnect.dbCon();
+        try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, roomId);
             ps.executeUpdate();
         }
     }
 
-    // --- RESERVATION OPERATIONS ---
+    // === 5. RESERVATION OPERATIONS ===
 
     // BOOK ROOM (Transactional JDBC)
     public void bookRoom(String guestName, String phone, int roomId, LocalDate checkIn, LocalDate checkOut)
-            throws SQLException, HotelException.RoomUnavailableException {
+            throws SQLException, RoomUnavailableException {
 
-        try (Connection con = DBConnect.dbCon()) {
+        try (Connection con = getConnection()) {
             con.setAutoCommit(false); // Begin transaction
 
             BigDecimal price;
@@ -152,7 +186,7 @@ public class HotelDao {
                 try (ResultSet rs = ps.executeQuery()) {
                     if (!rs.next() || !rs.getBoolean("active")) {
                         con.rollback();
-                        throw new HotelException.RoomUnavailableException("Selected room is inactive or not found.");
+                        throw new RoomUnavailableException("Selected room is inactive or not found.");
                     }
                     price = rs.getBigDecimal("price_per_night");
                 }
@@ -167,7 +201,7 @@ public class HotelDao {
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         con.rollback();
-                        throw new HotelException.RoomUnavailableException("Room is already booked for these dates.");
+                        throw new RoomUnavailableException("Room is already booked for these dates.");
                     }
                 }
             }
@@ -196,7 +230,7 @@ public class HotelDao {
         List<ReservationRecord> list = new ArrayList<>();
         String sql = "SELECT b.*, r.room_number FROM reservations b "
                 + "JOIN rooms r ON b.room_id = r.room_id ORDER BY b.reservation_id DESC";
-        try (Connection con = DBConnect.dbCon();
+        try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -218,7 +252,7 @@ public class HotelDao {
     // CANCEL RESERVATION
     public boolean cancelReservation(int reservationId) throws SQLException {
         String sql = "UPDATE reservations SET booking_status = 'Cancelled' WHERE reservation_id = ? AND booking_status = 'Booked'";
-        try (Connection con = DBConnect.dbCon();
+        try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, reservationId);
             return ps.executeUpdate() > 0;
